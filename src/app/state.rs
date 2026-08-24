@@ -1503,6 +1503,12 @@ pub struct AppState {
     pub sidebar_section_split: f32,
     pub agent_panel_sort: AgentPanelSort,
     pub status_indicators: crate::config::StatusIndicatorStyle,
+    /// Label source for tabs with no user-assigned name.
+    pub tab_auto_name: crate::config::TabAutoNameConfig,
+    /// Display-width cap applied to terminal-title tab labels.
+    pub tab_auto_name_max_width: u16,
+    /// Which agent states draw an indicator in the tab bar.
+    pub show_tab_status: crate::config::TabStatusConfig,
     /// Transient session-wide projection override for the built-in Agents view.
     pub agent_view_override: Option<crate::api::schema::AgentViewSetParams>,
     pub sidebar_agents: crate::config::AgentsSidebarConfig,
@@ -1875,6 +1881,9 @@ impl AppState {
             sidebar_section_split: 0.5,
             agent_panel_sort: AgentPanelSort::Spaces,
             status_indicators: crate::config::StatusIndicatorStyle::Dots,
+            tab_auto_name: crate::config::TabAutoNameConfig::Number,
+            tab_auto_name_max_width: crate::config::DEFAULT_TAB_AUTO_NAME_MAX_WIDTH,
+            show_tab_status: crate::config::TabStatusConfig::Off,
             agent_view_override: None,
             sidebar_agents: crate::config::AgentsSidebarConfig::default(),
             sidebar_spaces: crate::config::SpacesSidebarConfig::default(),

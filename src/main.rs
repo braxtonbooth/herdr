@@ -322,6 +322,20 @@ const DEFAULT_CONFIG: &str = r##"# herdr configuration
 # Desktop tab row placement: "top" or "bottom".
 # tab_bar_position = "top"
 
+# Label used for tabs you have not renamed: "number" keeps the tab position, and
+# "terminal_title" uses the focused pane's terminal title, so an agent pane labels its
+# own tab with whatever task it reports. Renaming a tab always wins over both.
+# tab_auto_name = "number"
+
+# Display-width cap for "terminal_title" labels. Agent titles are whole sentences, so
+# an uncapped label pushes sibling tabs out of the row.
+# tab_auto_name_max_width = 24
+
+# Agent status indicator drawn before the tab label. "off" leaves the tab row
+# unchanged; "attention" marks only blocked and finished-but-unseen panes; "all" marks
+# every detected state. Uses the same glyphs and colors as status_indicators.
+# show_tab_status = "off"
+
 # Agent panel ordering: "spaces" (grouped by space) or "priority" (attention queue).
 # "workspaces" is accepted as an alias for "spaces".
 # agent_panel_sort = "spaces"

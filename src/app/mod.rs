@@ -617,6 +617,9 @@ impl App {
             sidebar_section_split,
             agent_panel_sort,
             status_indicators: config.ui.status_indicators,
+            tab_auto_name: config.ui.tab_auto_name,
+            tab_auto_name_max_width: config.ui.tab_auto_name_max_width,
+            show_tab_status: config.ui.show_tab_status,
             agent_view_override: None,
             sidebar_agents: config.ui.sidebar.agents.clone(),
             sidebar_spaces: config.ui.sidebar.spaces.clone(),
@@ -1448,6 +1451,9 @@ impl App {
                 self.state.agent_panel_sort =
                     agent_panel_sort_from_config(config.ui.agent_panel_sort);
                 self.state.status_indicators = config.ui.status_indicators;
+                self.state.tab_auto_name = config.ui.tab_auto_name;
+                self.state.tab_auto_name_max_width = config.ui.tab_auto_name_max_width;
+                self.state.show_tab_status = config.ui.show_tab_status;
                 self.state.sidebar_agents = config.ui.sidebar.agents.clone();
                 self.state.sidebar_spaces = config.ui.sidebar.spaces.clone();
                 self.state.agent_panel_scroll = 0;

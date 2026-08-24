@@ -6,7 +6,7 @@ use serde::{de, Deserialize, Deserializer, Serialize};
 use super::{
     ActionKeybinds, BindingConfig, CommandKeybindConfig, IndexedKeybind, Keybinds, SidebarConfig,
     SoundConfig, ThemeConfig, DEFAULT_MOBILE_WIDTH_THRESHOLD, DEFAULT_MOUSE_SCROLL_LINES,
-    DEFAULT_SCROLLBACK_LIMIT_BYTES,
+    DEFAULT_SCROLLBACK_LIMIT_BYTES, DEFAULT_TAB_AUTO_NAME_MAX_WIDTH,
 };
 
 pub const MAX_TOAST_DELAY_SECONDS: u64 = 3600;
@@ -804,6 +804,45 @@ pub enum TabBarPositionConfig {
     Bottom,
 }
 
+/// Label source for tabs the user has not explicitly renamed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum TabAutoNameConfig {
+    /// Tab position, matching the historical tab bar.
+    #[default]
+    Number,
+    /// Focused pane's terminal title, with the agent's animated prefix stripped.
+    TerminalTitle,
+}
+
+/// Which agent states earn a status indicator in the tab bar.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum TabStatusConfig {
+    /// No indicator; the tab bar renders exactly as it did before.
+    #[default]
+    Off,
+    /// Only states that want the user to look: blocked, and finished-but-unseen.
+    Attention,
+    /// Every detected state, including working and idle.
+    All,
+}
+
+impl TabStatusConfig {
+    /// Attention mode deliberately stays quiet for working and idle-seen panes so
+    /// the tab bar only draws the eye when a pane actually needs one.
+    pub fn shows(self, state: crate::detect::AgentState, seen: bool) -> bool {
+        match self {
+            Self::Off => false,
+            Self::All => true,
+            Self::Attention => matches!(
+                (state, seen),
+                (crate::detect::AgentState::Blocked, _) | (crate::detect::AgentState::Idle, false)
+            ),
+        }
+    }
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(default)]
 pub struct UiConfig {
@@ -848,6 +887,15 @@ pub struct UiConfig {
     pub hide_tab_bar_when_single_tab: bool,
     /// Desktop tab row placement. Default: top.
     pub tab_bar_position: TabBarPositionConfig,
+    /// Label source for auto-named tabs. Saved values are "number" or "terminal_title".
+    /// Default: "number".
+    pub tab_auto_name: TabAutoNameConfig,
+    /// Display-width cap for terminal-title tab labels. Agent titles are whole task
+    /// sentences, so an uncapped label pushes sibling tabs out of the bar. Default: 24.
+    pub tab_auto_name_max_width: u16,
+    /// Agent status indicator in tab labels. Saved values are "off", "attention", or
+    /// "all". Default: "off".
+    pub show_tab_status: TabStatusConfig,
     /// Agent sidebar ordering. Saved values are "spaces" or "priority". Default: "spaces".
     pub agent_panel_sort: AgentPanelSortConfig,
     /// Retired setting that Herdr wrote before the workspace filter was removed.
@@ -1057,6 +1105,9 @@ impl Default for UiConfig {
             show_agent_labels_on_pane_borders: false,
             hide_tab_bar_when_single_tab: false,
             tab_bar_position: TabBarPositionConfig::Top,
+            tab_auto_name: TabAutoNameConfig::Number,
+            tab_auto_name_max_width: DEFAULT_TAB_AUTO_NAME_MAX_WIDTH,
+            show_tab_status: TabStatusConfig::Off,
             agent_panel_sort: AgentPanelSortConfig::Spaces,
             _legacy_agent_panel_scope: None,
             status_indicators: StatusIndicatorStyle::Dots,

@@ -72,6 +72,38 @@ impl Tab {
     }
 }
 
+impl Tab {
+    /// Highest-attention agent state among this tab's panes, or `None` when the tab
+    /// holds no pane with a live terminal.
+    pub fn aggregate_state(
+        &self,
+        terminals: &HashMap<TerminalId, TerminalState>,
+    ) -> Option<(AgentState, bool)> {
+        self.panes
+            .values()
+            .filter_map(|pane| {
+                terminals
+                    .get(&pane.attached_terminal_id)
+                    .map(|terminal| (terminal.state, pane.seen))
+            })
+            .max_by_key(|(state, seen)| pane_attention_priority(*state, *seen))
+    }
+
+    /// Focused pane's terminal title with the agent's animated prefix removed.
+    ///
+    /// The stripped form matters for anything that sizes itself from the title:
+    /// raw titles carry a spinner glyph that changes every frame.
+    pub fn focused_terminal_title(
+        &self,
+        terminals: &HashMap<TerminalId, TerminalState>,
+    ) -> Option<String> {
+        let pane = self.panes.get(&self.layout.focused())?;
+        terminals
+            .get(&pane.attached_terminal_id)?
+            .terminal_title_stripped()
+    }
+}
+
 fn pane_attention_priority(state: AgentState, seen: bool) -> u8 {
     match (state, seen) {
         (AgentState::Blocked, _) => 4,
